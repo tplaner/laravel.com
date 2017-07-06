@@ -212,6 +212,18 @@ jQuery(function($) {
     }
   }
 
+  // if localStorage isn't available it'll just be 'no' and the state won't persist
+  //
+  // localStorage doesn't support booleans, so we'll just use 'yes' and 'no'
+  var storageExpandAllItems = 'no';
+  try {
+    storageExpandAllItems = localStorage.getItem('laravel_expand_all_items') || 'no';
+  } catch (exception) { }
+
+  if (storageExpandAllItems === 'yes') {
+    $('#expand-all-items > small').text('Collapse All');
+  }
+
   // collapse and expand for the sidebar
 
   var toggles = document.querySelectorAll('.sidebar h2'),
@@ -221,6 +233,10 @@ jQuery(function($) {
     toggles[i].addEventListener('click', expandItem);
     toggles[i].addEventListener('keydown', expandItemKeyboard);
     toggles[i].setAttribute('tabindex', '0');
+
+    if (storageExpandAllItems === 'yes') {
+      toggles[i].classList.add('is-active');
+    }
   }
 
   function expandItem(e) {
@@ -256,4 +272,31 @@ jQuery(function($) {
       toggles[i].classList.remove('is-active');
     }
   }
+
+  function expandAllItems() {
+    for (var i = 0; i < toggles.length; i++) {
+      toggles[i].classList.add('is-active');
+    }
+  }
+
+  $('#expand-all-items').on('click', function () {
+    if (storageExpandAllItems == 'no') {
+      expandAllItems();
+
+      $('#expand-all-items > small').text('Collapse All');
+
+      storageExpandAllItems = 'yes';
+    } else {
+      clearItems();
+
+      $('#expand-all-items > small').text('Expand All');
+
+      storageExpandAllItems = 'no';
+    }
+
+    // prevents an JS errors if localStorage isn't available
+    try {
+      localStorage.setItem('laravel_expand_all_items', storageExpandAllItems);
+    } catch (exception) { }
+  });
 });
